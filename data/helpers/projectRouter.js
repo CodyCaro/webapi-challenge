@@ -13,6 +13,10 @@ router.get("/:id", validateProjectId, (req, res) => {
   res.status(200).json(req.project);
 });
 
+router.get("/:id/actions", validateProjectId, (req, res) => {
+  res.status(200).json(req.project.actions);
+});
+
 router.delete("/:id", validateProjectId, async (req, res) => {
   const project = await projectModel.remove(req.params.id);
 
