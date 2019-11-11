@@ -10,6 +10,11 @@ router.post("/", validateProject, (req, res) => {
   res.status(200).json(req.body);
 });
 
+router.post("/:id/actions/", validateProjectId, validateAction, (req, res) => {
+  actionModel.insert(req.body);
+  res.status(200).json(req.body);
+});
+
 router.get("/:id", validateProjectId, (req, res) => {
   res.status(200).json(req.project);
 });
@@ -29,9 +34,9 @@ router.get(
 );
 
 router.delete("/:id", validateProjectId, async (req, res) => {
-  const actions = await actionsModel.remove(req.params.id);
+  const project = await projectModel.remove(req.params.id);
 
-  if (actions) {
+  if (project) {
     res.status(200).json({
       message: "project deleted"
     });
@@ -39,14 +44,15 @@ router.delete("/:id", validateProjectId, async (req, res) => {
 });
 
 router.delete(
-  "/:id/actions/:id",
+  "/:id/actions/:actionID",
   validateProjectId,
   validateActionId,
   async (req, res) => {
-    // console.log(req.params.id);
-    // const actions = await actionsModel.remove(req.params.id);
+    const action = await actionsModel.remove(req.params.actionID);
 
-    if (actions) {
+    console.log(action);
+
+    if (action) {
       res.status(200).json({
         message: "project deleted"
       });
@@ -112,6 +118,28 @@ function validateProject(req, res, next) {
       next();
     } else {
       res.status(400).json({ message: "missing required name field" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "exception",
+      error
+    });
+  }
+}
+
+function validateAction(req, res, next) {
+  try {
+    if (
+      "notes" in req.body &&
+      "description" in req.body &&
+      "project_id" in req.body
+    ) {
+      next();
+    } else {
+      res
+        .status(400)
+        .json({ message: "missing required name field and description field" });
     }
   } catch (error) {
     console.log(error);
