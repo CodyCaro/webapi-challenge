@@ -31,10 +31,13 @@ Demonstrate your understanding of this Sprint's concepts by answering the follow
       Middleware is an array of functions that get executed in the order they are introduced into the server code.
 
 - [ ] Describe a Resource?
+      An object with a type, associated data, relationships to other resources, and a set of methods that operate on it.
 
-* [ ] What can the API return to help clients know if a request was successful?
+- [ ] What can the API return to help clients know if a request was successful?
+      200 OK status code.
 
-* [ ] How can we partition our application into sub-applications?
+- [ ] How can we partition our application into sub-applications?
+      By using express Routers.
 
 ## Project Setup
 
