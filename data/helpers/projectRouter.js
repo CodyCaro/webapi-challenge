@@ -4,39 +4,34 @@ const projectModel = require("./projectModel");
 
 const router = express.Router();
 
-router.post("/", (req, res) => {});
-
-router.post("/:id/posts", (req, res) => {});
-
-// router.get("/", async (req, res) => {
-//   try {
-//     console.log("get the projects");
-//     const projects = await projectModel.get();
-
-//     if (projects) {
-//       res.status(200).json(projects);
-//     } else {
-//       res.status(400).json({
-//         message: "There are no projects"
-//       });
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({
-//       error: "The projects information could not be retrieved."
-//     });
-//   }
-// });
+router.post("/", validateProject, (req, res) => {
+  projectModel.insert(req.body);
+  res.status(200).json(req.body);
+});
 
 router.get("/:id", validateProjectId, (req, res) => {
   res.status(200).json(req.project);
 });
 
-router.get("/:id/posts", (req, res) => {});
+router.delete("/:id", validateProjectId, async (req, res) => {
+  const project = await projectModel.remove(req.params.id);
 
-router.delete("/:id", (req, res) => {});
+  if (project) {
+    res.status(200).json({
+      message: "project deleted"
+    });
+  }
+});
 
-router.put("/:id", (req, res) => {});
+router.put("/:id", validateProjectId, validateProject, async (req, res) => {
+  const project = await projectModel.update(req.params.id, req.body);
+
+  if (project) {
+    res.status(200).json({
+      message: `Your new project is name: ${req.body.name} description: ${req.body.description}`
+    });
+  }
+});
 
 //custom middleware
 
@@ -60,8 +55,20 @@ async function validateProjectId(req, res, next) {
   }
 }
 
-function validateUser(req, res, next) {}
-
-function validatePost(req, res, next) {}
+function validateProject(req, res, next) {
+  try {
+    if ("name" in req.body && "description" in req.body) {
+      next();
+    } else {
+      res.status(400).json({ message: "missing required name field" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "exception",
+      error
+    });
+  }
+}
 
 module.exports = router;
