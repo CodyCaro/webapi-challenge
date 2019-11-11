@@ -48,13 +48,13 @@ router.delete(
   validateProjectId,
   validateActionId,
   async (req, res) => {
-    const action = await actionsModel.remove(req.params.actionID);
+    const action = await actionModel.remove(req.params.actionID);
 
     console.log(action);
 
     if (action) {
       res.status(200).json({
-        message: "project deleted"
+        message: "action deleted"
       });
     }
   }
@@ -101,7 +101,7 @@ async function validateActionId(req, res, next) {
       req.project.action = id;
       next();
     } else {
-      res.status(400).json({ message: "invalid project id" });
+      res.status(400).json({ message: "invalid action id" });
     }
   } catch (error) {
     console.log(error);
@@ -117,7 +117,9 @@ function validateProject(req, res, next) {
     if ("name" in req.body && "description" in req.body) {
       next();
     } else {
-      res.status(400).json({ message: "missing required name field" });
+      res
+        .status(400)
+        .json({ message: "missing required name field and description" });
     }
   } catch (error) {
     console.log(error);
@@ -137,9 +139,10 @@ function validateAction(req, res, next) {
     ) {
       next();
     } else {
-      res
-        .status(400)
-        .json({ message: "missing required name field and description field" });
+      res.status(400).json({
+        message:
+          "missing required notes field and description field and project id field"
+      });
     }
   } catch (error) {
     console.log(error);
