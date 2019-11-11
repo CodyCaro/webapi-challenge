@@ -1,0 +1,187 @@
+const express = require("express");
+
+const projectModel = require("./projectModel");
+const actionModel = require("./actionModel");
+
+const router = express.Router();
+
+router.post("/", validateProject, (req, res) => {
+  projectModel.insert(req.body);
+  res.status(200).json(req.body);
+});
+
+router.post("/:id/actions/", validateProjectId, validateAction, (req, res) => {
+  actionModel.insert(req.body);
+  res.status(200).json(req.body);
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const projects = await projectModel.get();
+    console.log(projects);
+    if (projects) {
+      res.status(200).json(projects);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: "The projects information could not be retrieved."
+    });
+  }
+});
+
+router.get("/:id", validateProjectId, (req, res) => {
+  res.status(200).json(req.project);
+});
+
+router.get("/:id/actions", validateProjectId, (req, res) => {
+  res.status(200).json(req.project.actions);
+});
+
+router.get(
+  "/:id/actions/:actionID",
+  validateProjectId,
+  validateActionId,
+  (req, res) => {
+    // console.log(req);
+    res.status(200).json(req.project.action);
+  }
+);
+
+router.delete("/:id", validateProjectId, async (req, res) => {
+  const project = await projectModel.remove(req.params.id);
+
+  if (project) {
+    res.status(200).json({
+      message: "project deleted"
+    });
+  }
+});
+
+router.delete(
+  "/:id/actions/:actionID",
+  validateProjectId,
+  validateActionId,
+  async (req, res) => {
+    const action = await actionModel.remove(req.params.actionID);
+
+    console.log(action);
+
+    if (action) {
+      res.status(200).json({
+        message: "action deleted"
+      });
+    }
+  }
+);
+
+router.put("/:id", validateProjectId, validateProject, async (req, res) => {
+  const project = await projectModel.update(req.params.id, req.body);
+
+  if (project) {
+    res.status(200).json({
+      message: `Your new project is name: ${req.body.name} description: ${req.body.description}`
+    });
+  }
+});
+
+router.put(
+  "/:id/actions/:actionID",
+  validateProjectId,
+  validateActionId,
+  validateAction,
+  async (req, res) => {
+    const action = await actionModel.update(req.params.actionID, req.body);
+
+    if (action) {
+      res.status(200).json({
+        message: `Your new action is notes: ${req.body.notes}, description: ${req.body.description}`
+      });
+    }
+  }
+);
+
+//custom middleware
+
+async function validateProjectId(req, res, next) {
+  try {
+    const id = await projectModel.get(req.params.id);
+    // console.log(req.params);
+
+    if (id) {
+      req.project = id;
+      next();
+    } else {
+      res.status(400).json({ message: "invalid project id" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "exception",
+      error
+    });
+  }
+}
+
+async function validateActionId(req, res, next) {
+  try {
+    const id = await actionModel.get(req.params.actionID);
+    // console.log(req.params);
+
+    if (id) {
+      req.project.action = id;
+      next();
+    } else {
+      res.status(400).json({ message: "invalid action id" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "exception",
+      error
+    });
+  }
+}
+
+function validateProject(req, res, next) {
+  try {
+    if ("name" in req.body && "description" in req.body) {
+      next();
+    } else {
+      res
+        .status(400)
+        .json({ message: "missing required name field and description" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "exception",
+      error
+    });
+  }
+}
+
+function validateAction(req, res, next) {
+  try {
+    if (
+      "notes" in req.body &&
+      "description" in req.body &&
+      "project_id" in req.body
+    ) {
+      next();
+    } else {
+      res.status(400).json({
+        message:
+          "missing required notes field and description field and project id field"
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "exception",
+      error
+    });
+  }
+}
+
+module.exports = router;
