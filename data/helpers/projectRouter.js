@@ -15,6 +15,21 @@ router.post("/:id/actions/", validateProjectId, validateAction, (req, res) => {
   res.status(200).json(req.body);
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const projects = await projectModel.get();
+    console.log(projects);
+    if (projects) {
+      res.status(200).json(projects);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: "The projects information could not be retrieved."
+    });
+  }
+});
+
 router.get("/:id", validateProjectId, (req, res) => {
   res.status(200).json(req.project);
 });
@@ -69,6 +84,22 @@ router.put("/:id", validateProjectId, validateProject, async (req, res) => {
     });
   }
 });
+
+router.put(
+  "/:id/actions/:actionID",
+  validateProjectId,
+  validateActionId,
+  validateAction,
+  async (req, res) => {
+    const action = await actionModel.update(req.params.actionID, req.body);
+
+    if (action) {
+      res.status(200).json({
+        message: `Your new action is notes: ${req.body.notes}, description: ${req.body.description}`
+      });
+    }
+  }
+);
 
 //custom middleware
 
